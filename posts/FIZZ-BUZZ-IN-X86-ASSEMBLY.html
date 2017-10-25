@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
+    <link rel="stylesheet" href="post.css">
+    <title>FIZZ BUZZ IN X86 ASSEMBLY</title>
+    <link href="github-gist.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="content">
+      <div class="headline">
+        <div class="title"> FIZZ BUZZ IN X86 ASSEMBLY </div>
+        <div class="date"> Sept 15 2017</div>
+      </div>
+      <div class="text">
+        <p>A year ago I went through a phase of trying to understand how computers work from the bottom up.</p>
+        <p>I worked through parts of
+          <a href="https://www.coursera.org/learn/build-a-computer">From Nand to Tetris</a> and parts of
+          <a href="https://download-mirror.savannah.gnu.org/releases/pgubook/ProgrammingGroundUp-1-0-booksize.pdf">Programming from the Ground Up</a> which is still one of my all time favorite programming books.</p>
+        <p>As the culmination of this phase I wrote a FizzBuzz program in x86 assembly. Recently I stumbled upon it on my computer. Reading through it I was like 'wow this is good you can kind of figure out what is happening even if you don't know assembly'
+          which was my intention when writing it in the first place.</p>
+        <p>I thought it might be useful to other people so I am giving it a better home on this blog. It is written in the AT&amp;T syntax.</p>
+        <p>If you have never read an assembly program before you should know one thing: instructions generally operate on registers. The entire program is basically a big dance of moving around constants and things saved at memory locations and registers
+          to different registers and then calling instructions on them. If this confused you and I am sure it did, just read on.</p>
+        <p>In the first section we define variables and constants.</p>
+        <pre><code><span class="hljs-meta">.section</span> <span class="hljs-meta">.data</span>
+<span class="hljs-symbol">
+number:</span>
+.quad <span class="hljs-number">0</span> <span class="hljs-comment"># we start out with 0</span>
+<span class="hljs-symbol">
+fizz_output:</span>
+<span class="hljs-meta">.ascii</span> <span class="hljs-string">"Fizz\n"</span>
+<span class="hljs-symbol">
+buzz_output:</span>
+<span class="hljs-meta">.ascii</span> <span class="hljs-string">"Buzz\n"</span>
+<span class="hljs-symbol">
+fizzbuzz_output:</span>
+<span class="hljs-meta">.ascii</span> <span class="hljs-string">"FizzBuzz\n"</span>
+<span class="hljs-symbol">
+number_output:</span>
+<span class="hljs-meta">.ascii</span> <span class="hljs-string">"  \n"</span>
+
+<span class="hljs-comment"># constants</span>
+<span class="hljs-meta">.equ</span> FIZZ_LENGTH, <span class="hljs-number">8</span>
+<span class="hljs-meta">.equ</span> <span class="hljs-keyword">BUZZ_LENGTH, </span><span class="hljs-number">4</span>
+<span class="hljs-meta">.equ</span> NUMBER_OUTPUT_LENGTH, <span class="hljs-number">3</span>
+<span class="hljs-meta">.equ</span> FIZZBUZZ_LENGTH, <span class="hljs-number">11</span>
+<span class="hljs-meta">.equ</span> FIZZ_NUMBER, <span class="hljs-number">3</span>
+<span class="hljs-meta">.equ</span> <span class="hljs-keyword">BUZZ_NUMBER, </span><span class="hljs-number">5</span>
+<span class="hljs-meta">.equ</span> <span class="hljs-keyword">BASE, </span><span class="hljs-number">10</span>
+
+<span class="hljs-meta">.equ</span> SYS_WRITE, <span class="hljs-number">4</span> <span class="hljs-comment"># write system call number</span>
+<span class="hljs-meta">.equ</span> SYS_EXIT, <span class="hljs-number">1</span> <span class="hljs-comment"># exit system call number</span>
+<span class="hljs-meta">.equ</span> STDOUT, <span class="hljs-number">1</span> <span class="hljs-comment"># file descriptor</span>
+<span class="hljs-meta">.equ</span> LINUX_SYSCALL, <span class="hljs-number">0x80</span>
+
+<span class="hljs-comment"># stack positions</span>
+<span class="hljs-meta">.equ</span> ST_OUTPUT_LENGTH, -<span class="hljs-number">8</span> <span class="hljs-comment"># outputlength</span>
+<span class="hljs-meta">.equ</span> ST_OUTPUT_ADDRESS, -<span class="hljs-number">16</span> <span class="hljs-comment"># outputaddress</span>
+<span class="hljs-meta">.equ</span> ST_NUMBER_OFFSET, -<span class="hljs-number">24</span> <span class="hljs-comment"># numberoffset</span>
+<span class="hljs-meta">.equ</span> ST_FIZZ_BOOL, -<span class="hljs-number">25</span> <span class="hljs-comment"># fizzbool</span>
+<span class="hljs-meta">.equ</span> ST_BUZZ_BOOL, -<span class="hljs-number">26</span> <span class="hljs-comment"># buzzbool</span>
+<span class="hljs-meta">.equ</span> ST_FIZZBUZZ_BOOL, -<span class="hljs-number">27</span> <span class="hljs-comment"># fizzbuzzbool</span>
+<span class="hljs-meta">.equ</span> ST, <span class="hljs-number">27</span>
+
+</code></pre>
+        <p>The next section is the actual program instructions.</p>
+        <pre><code><span class="hljs-selector-class">.section</span> <span class="hljs-selector-class">.text</span>
+</code></pre>
+        <p>This .globl _start here is important because it lets the computer know from where to start running your instructions.</p>
+        <pre><code><span class="hljs-selector-class">.globl</span> _start
+</code></pre>
+        <p>Don't mind the stack business here too much. Since I don't even use functions in this program it wouldn't have been necessary.</p>
+        <pre><code>_start:
+movq  %rsp, %rbp <span class="hljs-comment"># save the stack pointer</span>
+subq  $ST, %rsp <span class="hljs-comment"># allocate space for stack variables</span>
+</code></pre>
+        <p>Here we label the start of the loop. If you scroll farther down towards the end of the program we have an instruction <code>jmp loop</code> that jumps back to this position in the program and continues executing from here.</p>
+        <pre><code><span class="hljs-keyword">loop</span>:
+</code></pre>
+        <p>At the beginning of the loop we (re)set the values at the fizz_bool and buzz_bool memory locations. We move the value 0 to the al register.</p>
+        <pre><code>movb $0, %al
+</code></pre>
+        <p>And then move the value at the al register which now is 0 to the fizz_bool memory location. The reason that we didn't directly move the value 0 to the memory location is that move instructions need to involve at least one register.</p>
+        <pre><code>movb <span class="hljs-built_in">%al</span>, ST_FIZZ_BOOL(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>Same thing for the buzz_bool memory location.</p>
+        <pre><code>movb $0, %al
+movb %al, ST_BUZZ_BOOL(%rbp)
+</code></pre>
+        <p>The next two instructions come as a pair. First we compare the memory location <code>number</code> (we had set this to 0 in the data section above and at the end of the loop farther down we also have a <code>incq number</code> instruction which
+          increments the value at this memory location) to the value 100. The ALU sets a couple special purpose registers when executing the comparison instruction indicating if the first value was greater, equal or less than the second one and uses those
+          registers for the folowing instruction.</p>
+        <p>Compare the current value at the number memory location to the value 100.</p>
+        <pre><code>cmpq $100, <span class="hljs-built_in">number</span>
+</code></pre>
+        <p>If it is greater jump to leave.</p>
+        <pre><code><span class="hljs-keyword">jg</span> <span class="hljs-keyword">leave</span> 
+</code></pre>
+        <p>Next we need to set the memory location fizz_bool to the correct value. To do that we need to divide the value saved at the memory location number with 3. Divisions are a little complicated.</p>
+        <p>We empty the register rdx for the division.</p>
+        <pre><code>movq $0, %rdx
+</code></pre>
+        <p>The value at the memory location number is the dividend. It needs to be in the rax register.</p>
+        <pre><code>movq <span class="hljs-built_in">number</span>, %rax
+</code></pre>
+        <p>3 is the divisor. Move it to any register.</p>
+        <pre><code>movq <span class="hljs-built_in">$FIZZ</span>_NUMBER, <span class="hljs-built_in">%rbx</span>
+</code></pre>
+        <p>Perform the division.</p>
+        <pre><code>divq <span class="hljs-built_in">%rbx</span> 
+</code></pre>
+        <p>Compare the remainder of the division(in the rdx register) with the value 0.
+          <br> If it is not 0 jump to set_up_buzz_bool. If it is 0 set fizz_bool to 1.</p>
+        <pre><code>cmpq $0, %rdx 
+jne set_up_buzz_bool 
+movb $1, %al
+movb %al, ST_FIZZ_BOOL(%rbp) 
+</code></pre>
+        <p>We do the exact same thing for the buzz_bool memory location.</p>
+        <pre><code>set_up_buzz_bool:
+movq $0, %rdx
+movq number, %rax
+movq $BUZZ_NUMBER, %rbx 
+divq %rbx
+</code></pre>
+        <p>If it is not 0 jump to set_up_fizzbuzz_bool. If it is 0 set buzz_bool to 1.</p>
+        <pre><code>cmpq $0, %rdx
+jne set_up_fizzbuzz_bool
+movb $1, %al
+movb %al, ST_BUZZ_BOOL(%rbp) <span class="hljs-comment"># set buzzbool to 1</span>
+</code></pre>
+        <p>Then we set the memory location fizzbuzz_bool to the correct value.</p>
+        <pre><code><span class="hljs-symbol">set_up_fizzbuzz_bool:</span>
+</code></pre>
+        <p>Move the value at the fizz_bool memory location to any general purpose register.</p>
+        <pre><code>movb ST_FIZZ_BOOL(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%al</span>
+</code></pre>
+        <p>Compute 'logical and' of the values at fizzbool and buzzbool memory locations.</p>
+        <pre><code>andb ST_BUZZ_BOOL(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%al</span>
+</code></pre>
+        <p>Set the fizzbuzz_bool memory location to the result of the 'logical and' of fizzbool and buzzbool.</p>
+        <pre><code>movb <span class="hljs-built_in">%al</span>, ST_FIZZBUZZ_BOOL(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>Then we check if the fizzbuzz_bool memory location is set to 1. If not we jump to the is_it_fizz_output memory location. If it is we set the memory location output_address to the address of the memory location fizzbuzz_output (we defined this
+          location in the data section to have the value &quot;FizzBuzz\n&quot;) and the memory location output length to the value at fizzbuzz_length (which we defined in the data section to be 11) .Then we jump to write_output. We again have to perform
+          the dance with the registers because a move operation needs to involve at least one register.</p>
+        <pre><code><span class="hljs-symbol">is_it_fizzbuzz_output:</span>
+</code></pre>
+        <p>Move fizzbuzzbool to any general purpose register.</p>
+        <pre><code>movb ST_FIZZBUZZ_BOOL(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%al</span> 
+</code></pre>
+        <p>Compare fizzbuzzbool with 1.</p>
+        <pre><code>cmpb $1, %al 
+</code></pre>
+        <p>If it is not 1 jump to is_it_fizz_output.</p>
+        <pre><code>jne <span class="hljs-keyword">is</span><span class="hljs-number">_</span>it<span class="hljs-number">_f</span>izz<span class="hljs-number">_</span>output
+</code></pre>
+        <p>Move the address where the string FizzBuzz is located to any general purpose register.</p>
+        <pre><code>movq <span class="hljs-built_in">$fizzbuzz</span>_output, <span class="hljs-built_in">%rax</span> 
+</code></pre>
+        <p>Set the value at the output_address memory location to the address of fizzbuzz_output.</p>
+        <pre><code>movq <span class="hljs-built_in">%rax</span>, ST_OUTPUT_ADDRESS(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>Move the value at memory location fizzbuzz_length to any general purpose register.</p>
+        <pre><code>movq <span class="hljs-built_in">$FIZZBUZZ</span>_LENGTH, <span class="hljs-built_in">%rax</span>
+</code></pre>
+        <p>Set the value at memory location outputlength to the length of the string FizzBuzz.</p>
+        <pre><code>movq <span class="hljs-built_in">%rax</span>, ST_OUTPUT_LENGTH(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>Jump to write_output.</p>
+        <pre><code><span class="hljs-keyword">jmp</span> write_output
+</code></pre>
+        <p>This is basically the same thing as above only for Fizz as output.</p>
+        <pre><code>is_it_fizz_output:
+movb ST_FIZZ_BOOL(%rbp), %al
+cmpb $1, %al
+jne is_it_buzz_output
+movq $fizz_output, %rax
+movq %rax, ST_OUTPUT_ADDRESS(%rbp) 
+movq $FIZZ_LENGTH, %rax
+movq %rax, ST_OUTPUT_LENGTH(%rbp)
+jmp write_output
+</code></pre>
+        <p>Again the same thing for when we need to output Bazz.</p>
+        <pre><code>is_it_buzz_output:
+movb ST_BUZZ_BOOL(%rbp), %al
+cmpb $1, %al
+jne set_up_number_output 
+movq $buzz_output, %rax
+movq %rax, ST_OUTPUT_ADDRESS(%rbp)
+movq $BUZZ_LENGTH, %rax
+movq %rax, ST_OUTPUT_LENGTH(%rbp)
+jmp write_output
+</code></pre>
+        <p>If it was neither FizzBuzz nor Fizz nor Bazz our output is the number. If we have a number with a single digit that has to be the first thing in the buffer. If we have two digits we first have to have the second digit then the first. To figure
+          out if we have a one digit number we again perform a division.</p>
+        <pre><code>set_up_number_output:
+movq $0, %rax
+</code></pre>
+        <p>Set the numberoffset to 0. We need this to insert the digits in the correct location of the buffer.</p>
+        <pre><code>movq <span class="hljs-built_in">%rax</span>, ST_NUMBER_OFFSET(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>Empty the rdx register for the division.</p>
+        <pre><code>movq $0, %rdx
+</code></pre>
+        <p>The number is the dividend it needs to be in the register rax.</p>
+        <pre><code>movq <span class="hljs-built_in">number</span>, %rax
+</code></pre>
+        <p>10 is the divisor move it to any memory location.</p>
+        <pre><code><span class="hljs-keyword">movq </span>$<span class="hljs-keyword">BASE, </span>%rbx
+</code></pre>
+        <p>Perform the division</p>
+        <pre><code>divq <span class="hljs-built_in">%rbx</span>
+</code></pre>
+        <p>The result of the divison in the register rax indicates if we have a single digit number. Compare it with 0.</p>
+        <pre><code>cmpq $0, %rax
+</code></pre>
+        <p>If it is 0 we have a single digit number. Jump to zeroth_digit.</p>
+        <pre><code><span class="hljs-keyword">je </span>zeroth_digit
+</code></pre>
+        <p>If not we get the ascii code of the first digit by adding 48 to the digit.</p>
+        <pre><code>addq $48, %rax
+</code></pre>
+        <p>Move the result to number_output.</p>
+        <pre><code><span class="hljs-keyword">movb </span>%al, number_output
+</code></pre>
+        <p>Add 1 to number_offset. Because we will need to insert the next digit with an offset.</p>
+        <pre><code>addq $1, ST_NUMBER_OFFSET(%rbp)
+</code></pre>
+        <pre><code><span class="hljs-symbol">zeroth_digit:</span>
+</code></pre>
+        <p>The remainder of the divison in the register rdx is the 0th digit. Get its ascii code.</p>
+        <pre><code>addq $48, %rdx
+</code></pre>
+        <p>Move the value at the number_offset memory location to any register.</p>
+        <pre><code>movq ST_NUMBER_OFFSET(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%rax</span>
+</code></pre>
+        <p>Move the zeroth digit to number_output plus number_offset</p>
+        <pre><code>movb <span class="hljs-built_in">%dl</span>, number_output(<span class="hljs-built_in">%rax</span>)
+</code></pre>
+        <p>Here we do the same thing we did above with the string outputs. We set the memory locations output_length and output_address to the correct values.</p>
+        <pre><code>movq <span class="hljs-built_in">$number</span>_output, <span class="hljs-built_in">%rax</span>
+movq <span class="hljs-built_in">%rax</span>, ST_OUTPUT_ADDRESS(<span class="hljs-built_in">%rbp</span>)
+movq <span class="hljs-built_in">$NUMBER</span>_OUTPUT_LENGTH, <span class="hljs-built_in">%rax</span>
+movq <span class="hljs-built_in">%rax</span>, ST_OUTPUT_LENGTH(<span class="hljs-built_in">%rbp</span>)
+</code></pre>
+        <p>And now we got everything ready for our grand finale. We got our output_address memory location set to the correct address (to a buffer with the ascii values Fizz, Buzz, FizzBuzz or the correct number) and we have the correct length of that buffer
+          saved at the output_length location. What we now want to do is to let the kernel know that we want to write something to a file. And not any file we want to write to the standard output as the shell reads from there and we want to print out
+          our results in the terminal. To do this we will make a system call to the kernel. For the kernel to know what it should do we have to have the write system call number in the register rax. Depending on which system call we want to do we also
+          have to have certain other values in other registers i.e for the write system call the file descriptor (in our case the standard output file descriptor which is 1) needs to be in the register rbx, the starting adress of the buffer we want to
+          write needs to be in the rcx register and the length of the buffer we want to write needs to be in the rdx register. Now all of our preparations pay off.</p>
+        <pre><code><span class="hljs-symbol">write_output:</span>
+</code></pre>
+        <p>The (write) system call number needs to be in the register rax.</p>
+        <pre><code>movq <span class="hljs-built_in">$SYS</span>_WRITE, <span class="hljs-built_in">%rax</span>
+</code></pre>
+        <p>The (standard output) file descriptor needs to be in the register rbx.</p>
+        <pre><code>movq <span class="hljs-built_in">$STDOUT</span>, <span class="hljs-built_in">%rbx</span> 
+</code></pre>
+        <p>The starting address of the buffer to write needs to be in the register rcx.</p>
+        <pre><code>movq ST_OUTPUT_ADDRESS(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%rcx</span>
+</code></pre>
+        <p>The length of the buffer to write needs to be in the register rdx.</p>
+        <pre><code>movq ST_OUTPUT_LENGTH(<span class="hljs-built_in">%rbp</span>), <span class="hljs-built_in">%rdx</span>
+</code></pre>
+        <p>And then we finally call the kernel.</p>
+        <pre><code><span class="hljs-built_in">int</span> $LINUX_SYSCALL
+</code></pre>
+        <p>We increment the value located at the memory location number.</p>
+        <pre><code>incq <span class="hljs-built_in">number</span>
+</code></pre>
+        <p>And jump back to the beginning of the loop.</p>
+        <pre><code><span class="hljs-keyword">jmp</span> <span class="hljs-keyword">loop</span>
+</code></pre>
+        <p>When we break out of the loop we need to let the kernel know that the program has finished running. We again put the system call number (in this case it is 1 for the exit system call) to the register rax and then call the kernel.</p>
+        <pre><code>leave:
+movq $SYS_EXIT, %rax
+<span class="hljs-keyword">int</span> $LINUX_SYSCALL 
+</code></pre>
+
+      </div>
+    </div>
+  </body>
+
+</html>

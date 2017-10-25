@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
+    <link rel="stylesheet" href="post.css">
+    <title>THIS SITE</title>
+    <link href="github-gist.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="content">
+      <div class="headline">
+        <div class="title"> THIS SITE </div>
+        <div class="date"> Oct 2 2017</div>
+      </div>
+      <div class="text">
+        <p>A couple months back I played around with
+          <a href="https://jekyllrb.com/">Jekyll</a> and
+          <a href="https://hexo.io/">Hexo</a> a little bit. With both of them it felt to me like I was more working against them then they were working for me. All along I knew that what I wanted for my site/blog was a very simple thing. I wanted a simple main page linking to an
+          archives page with links to blogposts and I wanted to be able to write my blogposts in markdown. The question at hand was: should I figure out how to do these things with Jekyll or Hexo or just rebuild those few things myself. Thinking about
+          it a little more I realized that all I needed were two simple templates, a markdown parser, reading in some files and writing out some files. Realizing that there are good markdown parsers out there I decided to go with option two and hacked
+          together a simple static site generator in an afternoon. (Honestly I hesitate to even call it a static site generator because that somehow sounds like something cool and complicated and what I hacked together is in essence just a simple script,
+          but it does generate a static site so I guess it is a static site generator). I had a whole lot of fun in the process, so I think it was the right decision if only for that reason.</p>
+        <p>My static site generator is so simple that it propably doesn't make sense for anyone else to use it. You could of course use it with your own templates, but rather than figuring that out you will be better of just writing your own and my static
+          site generator is ideal to explain the basic idea.</p>
+        <p>So how does it work? Simple! You create a directory in which you put markdown files which have a name containing the date and the title of the entry separated by underscores. (You can specify the location of this directory as a command line argument
+          to the main script. By default it is a directory called entries in the top level directory). I then get all of the paths to these entries.</p>
+        <pre><code class="language-javascript"><span class="hljs-keyword">const</span> entryPaths = fs
+  .readdirSync(entriesPath)
+  .map(<span class="hljs-function"><span class="hljs-params">fname</span> =&gt;</span> path.join(entriesPath, fname));
+</code></pre>
+        <p>Then I parse the files resulting in an array of parsedEntries <code>[{'title': 'Entry1 title', 'date':'Entry1 date', 'slug':'Entry1 title with whitespaces replaced', 'content':'html converted from the markdown'}, ...]</code></p>
+        <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseEntry</span>(<span class="hljs-params">entryPath</span>) </span>{
+  <span class="hljs-keyword">const</span> entryFname = path.basename(entryPath);
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">slug</span>: parseSlug(entryFname),
+    <span class="hljs-attr">date</span>: parseDate(entryFname),
+    <span class="hljs-attr">title</span>: parseTitle(entryFname),
+    <span class="hljs-attr">text</span>: readAndParseContent(entryPath)
+  };
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">parseEntries</span>(<span class="hljs-params">entryPaths</span>) </span>{
+  <span class="hljs-keyword">return</span> entryPaths.map(<span class="hljs-function"><span class="hljs-params">entryPath</span> =&gt;</span> parseEntry(entryPath));
+};
+
+<span class="hljs-keyword">const</span> parsedEntries = parseEntries(entryPaths);
+</code></pre>
+        <p>Title, date and slug parsing is trivial. To convert the markdown of the content to html I use
+          <a href="https://github.com/jonschlinkert/remarkable">remarkable</a>. To get code higlighting I use
+          <a href="https://highlightjs.org/">highlight.js</a>. To make remarkable and highlight.js work together you specify the highlight option in the constructor of the remarkable converter.</p>
+        <pre><code class="language-javascript"><span class="hljs-keyword">const</span> Remarkable = <span class="hljs-built_in">require</span>(<span class="hljs-string">"remarkable"</span>);
+<span class="hljs-keyword">const</span> hljs = <span class="hljs-built_in">require</span>(<span class="hljs-string">"highlight.js"</span>);
+
+<span class="hljs-keyword">const</span> mdConverter = <span class="hljs-keyword">new</span> Remarkable({
+  highlight(str, lang) {
+    <span class="hljs-keyword">if</span> (lang &amp;&amp; hljs.getLanguage(lang)) {
+      <span class="hljs-keyword">return</span> hljs.highlight(lang, str).value;
+
+    <span class="hljs-keyword">return</span> hljs.highlightAuto(str).value;
+  },
+});
+
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">readAndParseContent</span>(<span class="hljs-params">entryPath</span>) </span>{
+  <span class="hljs-keyword">const</span> markdownString = fs.readFileSync(entryPath).toString();
+  <span class="hljs-keyword">return</span> mdConverter.render(markdownString);
+}
+</code></pre>
+        <p>Now that I have my parsedEntries I somehow need to insert this data into templates so that I get my static html files. I want to end up with one one archives page and one post page per entry. Again you can hand the paths to the handlebar templates
+          to the main script. By default they are in the same directory as the script and are called <code>archives.handlebars</code> and <code>post.handlebars</code>.</p>
+        <p>archives.handlebars:</p>
+        <pre><code class="language-handlebars"><span class="xml"> <span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"content"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">h1</span>&gt;</span> Dorothea's Blog <span class="hljs-tag">&lt;/<span class="hljs-name">h1</span>&gt;</span>
+      </span><span class="hljs-template-tag">{{#<span class="hljs-name"><span class="hljs-builtin-name">each</span></span> headlines}}</span><span class="xml">
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"headline"</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">href</span>=<span class="hljs-string">"posts/</span></span></span><span class="hljs-template-variable">{{slug}}</span><span class="xml"><span class="hljs-tag"><span class="hljs-string">.html"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"title"</span>&gt;</span>
+            </span><span class="hljs-template-variable">{{title}}</span><span class="xml">
+            <span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"date"</span>&gt;</span>
+              </span><span class="hljs-template-variable">{{date}}</span><span class="xml">
+            <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+      </span><span class="hljs-template-tag">{{/<span class="hljs-name"><span class="hljs-builtin-name">each</span></span>}}</span><span class="xml">
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</span></code></pre>
+        <p>and post.handlebars:</p>
+        <pre><code class="language-handlebars"><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">body</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"content"</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"headline"</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"title"</span>&gt;</span> </span><span class="hljs-template-variable">{{ title }}</span><span class="xml"> <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"date"</span>&gt;</span> </span><span class="hljs-template-variable">{{ date }}</span><span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"text"</span>&gt;</span>
+        </span><span class="hljs-template-variable">{{{text}}</span><span class="xml">}
+      <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</span></code></pre>
+        <p>And I compile them using the parsedEntries. The archives page:</p>
+        <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">buildArchives</span>(<span class="hljs-params">
+  parsedHeadlines,
+  templatePath,
+  outputPath
+</span>) </span>{
+  <span class="hljs-keyword">const</span> archivesHtml = handleBars.compile(
+    fs.readFileSync(templatePath).toString()
+  )({ <span class="hljs-attr">headlines</span>: parsedHeadlines });
+  fs.writeFileSync(outputPath, archivesHtml);
+}
+
+<span class="hljs-keyword">if</span> (!fs.existsSync(outputPath)) {
+  fs.mkdirSync(outputPath);
+}
+
+buildArchives(
+  parsedEntries.map(<span class="hljs-function"><span class="hljs-params">entry</span> =&gt;</span> ({
+    <span class="hljs-attr">title</span>: entry.title,
+    <span class="hljs-attr">date</span>: entry.date,
+    <span class="hljs-attr">slug</span>: entry.slug
+  })),
+  archivesTemplatePath,
+  path.join(outputPath, <span class="hljs-string">"archives.html"</span>)
+);
+</code></pre>
+        <p>And the posts one by one:</p>
+        <pre><code class="language-javascript"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">buildPosts</span>(<span class="hljs-params">parsedEntries, templatePath, outputPath</span>) </span>{
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> parsedEntry <span class="hljs-keyword">of</span> parsedEntries) {
+    <span class="hljs-keyword">const</span> postHtml = handleBars.compile(
+      fs.readFileSync(templatePath).toString()
+    )(parsedEntry);
+    <span class="hljs-keyword">const</span> postOutputPath = path.join(
+      outputPath, <span class="hljs-string">`./<span class="hljs-subst">${parsedEntry.slug}</span>.html`</span>
+    );
+    <span class="hljs-keyword">if</span> (!postOutputPath) {
+      fs.mkdirSync(postOutputPath);
+    }
+    fs.writeFileSync(postOutputPath, postHtml);
+  }
+}
+
+<span class="hljs-keyword">if</span> (!fs.existsSync(path.join(outputPath, <span class="hljs-string">"posts"</span>))) {
+  fs.mkdirSync(path.join(outputPath, <span class="hljs-string">"posts"</span>));
+}
+
+buildPosts(parsedEntries, postTemplatePath, path.join(outputPath, <span class="hljs-string">"posts"</span>));
+</code></pre>
+        <p>To have a good development and writting experience I didn't want to recompile manually each time I was hacking on my static site generator or changing/adding a blogpost. To recompile when the static site generating scripts or blogposts change
+          I use
+          <a href="https://www.npmjs.com/package/watch">watch</a> and to reload automatically when any of the output html files or css files change I use
+          <a href="https://www.npmjs.com/package/live-server">live-server</a>.</p>
+        <p>In my package.json file I have:</p>
+        <pre><code class="language-javascript"><span class="hljs-string">"scripts"</span>: {
+  <span class="hljs-string">"start"</span>: <span class="hljs-string">"concurrently 'npm run reload' 'npm run watch'"</span>,
+  <span class="hljs-string">"reload"</span>: <span class="hljs-string">"live-server --open=./build"</span>,
+  <span class="hljs-string">"watch"</span>: <span class="hljs-string">"watch 'npm run build' ./src ./entries"</span>,
+  <span class="hljs-string">"build"</span>: <span class="hljs-string">"node ./src/main.js --entriesPath ./entries/ --archivesTemplatePath ./src/archives.handlebars --postTemplatePath ./src/post.handlebars --outputPath ./build"</span>
+}
+</code></pre>
+        <p>Now I just run <code>npm run start</code> whenever I am working on my blog. This makes for a really good development and writting experience.</p>
+
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -1,0 +1,91 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 0.9rem;
+}
+
+.text {
+  width: 100%;
+  line-height: 3em;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.8em;
+  overflow-wrap: break-word;
+}
+
+.headline .date {
+  color: darkgray;
+  font-weight: bold;
+  font-size:0.9em;
+  font-family: 'Lato', sans-serif;
+}
+
+.headline .title {
+  font-size: 1.8em
+}
+
+body {
+  background-color: #ffffff;;
+}
+
+ul {
+  list-style-position: inside;
+}
+
+p {
+  margin-bottom: 1.5em;
+  margin-top: 1.5em;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+pre {
+  margin-top: 2em;
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+  padding-top: 1em;
+  padding-left: 1em;
+  border: 2px solid gainsboro;
+  border-radius: 10px;
+  overflow: hidden;
+  overflow-x:auto;
+}
+
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 50px;
+  margin-bottom: 100px;
+}
+
+.headline {
+  width: 100%;
+}
+
+.headline .title {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: bold;
+}
+
+@media (min-width: 850px) {
+
+  * {
+    font-size: 1rem;
+  }
+
+  .headline {
+    margin-bottom: 40px;
+  }
+
+  .content {
+    width: 800px;
+    margin-top: 120px;
+  }
+
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
+    <link rel="stylesheet" href="post.css">
+    <title>LEARNING WEB DEVELOPMENT IN 2017</title>
+    <link href="github-gist.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div class="content">
+      <div class="headline">
+        <div class="title"> LEARNING WEB DEVELOPMENT IN 2017 </div>
+        <div class="date"> Sept 1 2017</div>
+      </div>
+      <div class="text">
+        <p>I have been trying to write this post for a very long time. There is a sweet spot between understanding something and still being aware of the difficulties in learning it which is the ideal time to write a blogpost. It might already have passed
+          but lets give this a try.</p>
+        <p>Given how popular the
+          <a href="https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f">How it feels to learn JavaScript in 2016</a> article still is and given that I have been teaching myself web development from the ground up the past months I thought I would write down what learning web development in 2017 was like for me. This
+          is an n equals one kind of story, but these kind of stories <em>can</em> be useful.</p>
+        <h1>What was hard about it</h1>
+        <p>The hardest part about it was that there where so many things to learn: vanilla javascript, the browser as a platform, frameworks which abstract this away, css, how the front-end fits into the bigger picture... Over the years going to Python and
+          Ruby conferences and meet-ups I had heard a lot of bits and pieces about web-development, but I completely lacked an understanding of the bigger picture as in how do client, server, HTTP, JavaScript, HTML, DOM, Front-end frameworks, Node.js,
+          Ruby, REST, Ruby on Rails, Python, Flask, NGINX, databases and so on fit together.</p>
+        <p>Another big point of confusion for me at the beginning was: ES5 vs ES2015, different browsers and Node.js implementing different parts of the spec, different runtimes, setting up webPack, modules vs script tags, ES6 Modules vs. CommonJS modules.
+          I guess all of these confusions are exactly what you would expect a beginner to be confused by.</p>
+        <h1>What I did</h1>
+        <p>I started out by learning JavaScript as a language using
+          <a href="https://www.amazon.com/JavaScript-Kids-Playful-Introduction-Programming/dp/1593274084">JavaScript for Kids</a>, parts of
+          <a href="https://www.amazon.com/Eloquent-JavaScript-2nd-Ed-Introduction/dp/1593275846/ref=sr_1_1?s=books&amp;ie=UTF8&amp;qid=1508880338&amp;sr=1-1&amp;keywords=eloquent+javascript">Eloquent JavaScript</a> and
+          <a href="https://www.amazon.com/JavaScript-Good-Parts-Douglas-Crockford/dp/0596517742/ref=pd_sim_14_2?_encoding=UTF8&amp;psc=1&amp;refRID=G9GJZE4FEABBCJYSA0KY">JavaScript: The Good Parts</a>. The problem with these books was that all of them were written in and for a pre ES2015 world. This mattered because JavaScript has its fair share of quirks many of which are made better or covered up by ES2015.
+          Also those quirks evidently led to very opinionated ways of development, most of which I actually could have spared myself from. The purpose for this step was to get a little comfortable with JavaScript before starting to write applications
+          but because of this 'opinionated ES5' vs 'ES2015 without beginner books' issue it took me a long time to get somewhat comfortable with JavaScript.</p>
+        <p>Then I got swept away by what I like to think of as the front-end wave. I started watching front-end talks from recent conferences. Two of the ones I remember watching and being super excited about were:
+          <a href="https://www.youtube.com/watch?v=DqMFX91ToLw">The Evolution of JavaScript</a> and
+          <a href="https://www.youtube.com/watch?v=0c9OC9NBsro">The Frontend is A Full Stack</a>. Another talk I remember watching during that time was
+          <a href="https://www.youtube.com/watch?v=8aGhZQkoFbQ">What the heck is the event loop anyway?</a> It doesn’t really fit the narrative here but I wanted to mention it as it really helped me understand asynchronous programming in JavaScript (which coming from Python was one of the few fundamental
+          concepts I had to learn). Around that time I also started to read
+          <a href="http://javascriptweekly.com/">JavaScript Weekly</a> and
+          <a href="https://frontendfoc.us/">Frontend Focus</a> which made my life so much better. Being swept away by the modern front-end wave also meant that I spent as a whole at least a week trying to understand how to set up a modern front-end development environment with Babel,
+          webPack, Browserify, npm, package.json and so on…</p>
+        <p>I then started to built a full-stack application with Express, postgreSQL and Angular. At that point every single thing I did for this project was new to me and that was hard. Sticking to articles like Dan Abramov's
+          <a href="https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367">You Might Not Need Redux</a> I also decided not to use NgRx. My app ended up exactly like you would expect it to end up. Components I didn't know about modifying parts of my state I didn't know about and a lot of explicit reactivity I had to
+          manage actively. I am exaggerating a bit but it wasn't pretty. At the end of this project I neither felt comfortable in my JavaScript language capabilities (as the way you program using a framework is very different from writing standalone programs)
+          nor in my capability to write a well working web application.</p>
+        <p>I went on to fix the first one by extensively implementing simple and fun algorithm problems in JavaScript and by working on a couple quick one day vanilla javascript front-end projects using ES6 and the MV* architecture. It is so well known that
+          it doesn't need mentioning but the
+          <a href="https://github.com/tastejs/todomvc/tree/gh-pages/examples/vanilla-es6">TodoMVC ES2015 implementation</a> was really useful and taught me a lot of cool tricks.</p>
+        <p>The second one got fixed when I started to learn React and Redux and implemented a project using them. The week I did was one of my all time glorious programming weeks. I was so unbelievably excited firstly because React in its purest form was
+          similar to Angular and thus was easy for me to get into but felt so. much. better. Especially jsx felt so natural. And secondly because sane state management with Redux was so beautiful! I want to specifically point out that this is not a React
+          vs. Angular issue. In my first project everything was new to me and on top of this while having read a lot of articles about state management and having thought about it extensively I decided not to use a state management tool. In my second
+          project I had a lot more experience I had thought extensively about component based architecture and state management, I had crocked the general principles of single page applications and I was finally using Redux which I had been ready to do
+          for weeks. It was bound to be a much better experience</p>
+        <p>The rest is history. I spent a lot of time getting into the code of
+          <a href="https://github.com/zulip/zulip-mobile/">zulip-mobile</a> a big open-source production React-Native app and learned a lot of tricks and best practices in the course of it. Then I got into the nitty-gritty details of the react ecosystem with performance profiling, server-side rendering,
+          pwas, styling alternatives, react storybook, redux ducks and so on and so on.</p>
+        <p>Good stuff, I tell ya...</p>
+        <h1>What I now think would be the best way to get into the JavaScript ecosystem and front-end development</h1>
+        <p>Start with the second edition of
+          <a href="https://www.amazon.com/Secrets-JavaScript-Ninja-John-Resig/dp/1617292850/ref=sr_1_1?ie=UTF8&amp;qid=1508881496&amp;sr=8-1&amp;keywords=secrets+of+the+javascript+ninja">Secrets of the JavaScript Ninja</a>. This is one of the few books out there already with ES2015 syntax (do not bother with ES5) and it is one of the few books out there which not only cover JavaScript as a language but also the browser as a
+          platform. If you don't like that book or want something free
+          <a href="http://javascript.info/">The Modern JavaScript Tutorial</a> does the same thing and is also pretty cool.</p>
+        <p>Watch
+          <a href="https://www.youtube.com/watch?v=8aGhZQkoFbQ">What the heck is the event loop anyway?</a>.</p>
+        <p>Make yourself a simple webpack starter project. Just something that lets you use modules and ES2015 on the front-end. Write one or two small projects with vanilla ES2015 (don't bother with jQuerry) i.e a tic-tac-toe, a to-do-list, a search-box
+          whatever comes to mind but keep it simple and uncomplicated.</p>
+        <p>Start reading
+          <a href="http://javascriptweekly.com/">JavaScript Weekly</a> and
+          <a href="https://frontendfoc.us/">Frontend Focus</a>.</p>
+        <p>Write a simple toy server using Node.js, Express and a simple database.</p>
+        <p>Learn React. The reason your first framework should be React is that it has an enormous adaptation and it will be easy to find open source projects to learn from later on. Start reading
+          <a href="https://react.statuscode.com/">React Status</a>. Write a simple app, again think to-do-list something only involving the front-end. Learn Redux. Write your first big project with React. I am sure you already have ideas as to what it should be. Get absorbed into the code of
+          an active React open source app. As mentioned above
+          <a href="https://github.com/zulip/zulip-mobile/">zulip-mobile</a> is great (it is React Native though so the set-up is a little more involved). The new
+          <a href="https://github.com/mozilla/addons-frontend">front-end page for mozilla addons</a> is another good option.</p>
+
+      </div>
+    </div>
+  </body>
+
+</html>
