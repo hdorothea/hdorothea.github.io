@@ -1,0 +1,29 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently 'npm run reload' 'npm run watch'",
+    "reload": "./node_modules/.bin/live-server --open=./build",
+    "watch": "watch 'npm run build' ./src ./entries",
+    "build": "node ./src/main.js --entriesPath ./entries/ --archivesTemplatePath ./src/archives.handlebars --postTemplatePath ./src/post.handlebars --outputPath ./build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.11.0",
+    "handlebars": "^4.0.11",
+    "highlight.js": "^9.12.0",
+    "live-server": "^1.2.0",
+    "pretty": "^2.0.0",
+    "remarkable": "^1.7.1",
+    "slug": "^0.9.1"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-plugin-jsx-a11y": "^6.0.2",
+    "eslint-plugin-react": "^7.4.0"
+  }
+}
