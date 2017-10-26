@@ -3,6 +3,13 @@ const fs = require("fs");
 const pretty = require("pretty");
 const path = require("path");
 
+handleBars.registerHelper('capitalize', function (str) {
+  if(str && typeof str === "string") {
+    return str.slice(0, 1).toUpperCase() + str.slice(1).toLowerCase();
+  }
+  return '';
+});
+
 function archives(
   parsedHeadlines,
   templatePath,
