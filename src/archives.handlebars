@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="archives.css">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
     <title>Archives</title>
   </head>
@@ -13,7 +14,7 @@
       <h1> Dorothea's Blog </h1>
       {{#each headlines}}
         <div class="headline">
-            <a href="posts/{{slug}}" class="title">
+            <a href="posts/{{slug}}" class="title hoverable">
             {{title}}
             </a>
             <div class="date">
@@ -22,5 +23,21 @@
         </div>
       {{/each}}
     </div>
+    <script>
+      var userAgent = window.navigator.userAgent;
+  
+      if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent(/Android/i)) {
+        var links = Array.prototype.slice.call(document.getElementsByClassName("hoverable"));
+        var className = "touchable";
+        links.forEach(function(element) {
+        if (element.classList) {
+          element.classList.add(className);
+        }
+        else {
+          element.className += ' ' + className;
+        }
+        }, this);
+      }    
+    </script>
   </body>
 </html>
