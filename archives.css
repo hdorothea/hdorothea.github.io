@@ -7,6 +7,10 @@
   font-weight: normal;
 }
 
+.headline a {
+  outline: 0;
+}
+
 body {
   background-color: #ffffff;;
 }
