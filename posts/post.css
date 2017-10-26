@@ -1,15 +1,18 @@
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .text {
   width: 100%;
-  line-height: 3em;
+  line-height: 1.9em;
   font-family: 'Lato', sans-serif;
-  font-size: 0.8em;
   overflow-wrap: break-word;
 }
 
@@ -56,7 +59,6 @@ pre code {
   word-wrap: normal;
 }
 
-
 .content {
   display: flex;
   flex-direction: column;
@@ -79,10 +81,6 @@ pre code {
 }
 
 @media (min-width: 850px) {
-
-  * {
-    font-size: 1rem;
-  }
 
   .headline {
     margin-bottom: 40px;

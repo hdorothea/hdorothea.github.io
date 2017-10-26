@@ -78,3 +78,7 @@ h1 {
     margin-top: 120px;
   }
 }
+
+.headline .touchable:hover {
+  border-bottom: 0;
+}

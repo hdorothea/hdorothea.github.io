@@ -7,7 +7,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
     <link rel="stylesheet" href="post.css">
-    <title>FIZZ BUZZ IN X86 ASSEMBLY</title>
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+    <title>Fizz buzz in x86 assembly</title>
     <link href="github-gist.css" rel="stylesheet" />
   </head>
 
@@ -27,7 +28,7 @@
         <p>I thought it might be useful to other people so I am giving it a better home on this blog. It is written in the AT&amp;T syntax.</p>
         <p>If you have never read an assembly program before you should know one thing: instructions generally operate on registers. The entire program is basically a big dance of moving around constants and things saved at memory locations and registers
           to different registers and then calling instructions on them. If this confused you and I am sure it did, just read on.</p>
-        <p>In the first section we define variables and constants.</p>
+        <p>In the first section we label certain memory locations and set their values.</p>
         <pre><code><span class="hljs-meta">.section</span> <span class="hljs-meta">.data</span>
 <span class="hljs-symbol">
 number:</span>

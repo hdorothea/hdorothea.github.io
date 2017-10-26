@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Dorothea Hoermann</title>
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="index.css">
   <link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Condensed|Droid+Serif" rel="stylesheet">
 </head>
@@ -19,14 +20,28 @@
         stuff done is hard. Autodidacts are the coolest.
       </p>
       <div class="link-footer">
-        <a class="current"> HOME </a>
-        <a href="https://twitter.com/dorophila"> TWITTER </a>
-        <a href="https://github.com/hdorothea"> GITHUB </a>
-        <a href="./archives.html"> BLOG </a>
+        <a class="current hoverable"> HOME </a>
+        <a class="hoverable" href="https://twitter.com/dorophila"> TWITTER </a>
+        <a class="hoverable" href="https://github.com/hdorothea"> GITHUB </a>
+        <a class="hoverable" href="./archives"> BLOG </a>
       </div>
     </div>
   </div>
-
+  <script>
+    var userAgent = window.navigator.userAgent;
+ 
+    if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent(/Android/i)) {
+       var links = Array.prototype.slice.call(document.getElementsByClassName("hoverable"));
+       var className = "touchable";
+       links.forEach(function(element) {
+       if (element.classList) {
+         element.classList.add(className);
+       }
+       else {
+         element.className += ' ' + className;
+       }
+      }, this);
+    }    
+  </script>
 </body>
-
 </html>

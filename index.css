@@ -80,6 +80,8 @@ p {
 .link-footer {
   font-family: "Roboto Condensed", sans-serif;
   display: flex;
+  justify-content: space-around;
+  width: 100%;
 }
 
 .current {
@@ -98,12 +100,14 @@ p {
 .link-footer a:hover {
   text-decoration: none;
   color: black;
-
 }
+
 
 .link-footer a {
   padding-left: 4px;
   padding-right: 4px;
-  margin-left: 1em;
-  margin-right: 1em;
+}
+
+.link-footer .touchable:hover {
+  border-bottom: 0;
 }
