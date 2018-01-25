@@ -1,5 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-113105077-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
+
+  gtag('config', 'UA-113105077-1');
+</script>
+
 
 <head>
   <meta charset="UTF-8">
@@ -15,9 +25,10 @@
   <div class="content">
     <div class="container">
       <h1> Dorothea Hoermann </h1>
-      <p>​ I used to be a scientist <a href="https://www.youtube.com/watch?v=SDIEBgtSSJk"> targeting flies with lasers</a>. Now I am a web developer. React, Redux, D3, ES2015 and co. are my things.
-        I strive to engineer rather than hack. Finding a balance between understanding things from the bottom up and getting
-        stuff done is hard. Autodidacts are the coolest.
+      <p>​ I used to be a scientist
+        <a href="https://www.youtube.com/watch?v=SDIEBgtSSJk"> targeting flies with lasers</a>. Now I am a web developer. React, Redux, D3, ES2015 and co. are my things. I strive
+        to engineer rather than hack. Finding a balance between understanding things from the bottom up and getting stuff
+        done is hard. Autodidacts are the coolest.
       </p>
       <div class="link-footer">
         <a class="current hoverable"> HOME </a>
@@ -29,19 +40,20 @@
   </div>
   <script>
     var userAgent = window.navigator.userAgent;
- 
+
     if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent(/Android/i)) {
-       var links = Array.prototype.slice.call(document.getElementsByClassName("hoverable"));
-       var className = "touchable";
-       links.forEach(function(element) {
-       if (element.classList) {
-         element.classList.add(className);
-       }
-       else {
-         element.className += ' ' + className;
-       }
+      var links = Array.prototype.slice.call(document.getElementsByClassName("hoverable"));
+      var className = "touchable";
+      links.forEach(function (element) {
+        if (element.classList) {
+          element.classList.add(className);
+        }
+        else {
+          element.className += ' ' + className;
+        }
       }, this);
     }    
   </script>
 </body>
+
 </html>
