@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    
+  
+    <channel>
+        
+    
+        <atom:link href="http://hdorothea.com//feed.xml" rel="self" type="application/rss+xml"/>
+        
+    
+        <title>
+            Dorothea Hoermann
+        </title>
+        
+    
+        <link>
+             http://hdorothea.com/ 
+        </link>
+        
+    
+        <description>
+             Dorothea's personal site 
+        </description>
+        
+      
+        <item>
+            
+        
+            <title>
+                THIS SITE
+            </title>
+            
+        
+            <link>
+                http://hdorothea.com/this-site
+            </link>
+            
+        
+            <guid isPermaLink="true">
+                http://hdorothea.com/this-site
+            </guid>
+            
+        
+            <pubDate>
+                Oct 2 2017
+            </pubDate>
+            
+        
+            <description>
+                
+          &lt;p&gt;A couple months back I played around with &lt;a href&#x3D;&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt; and &lt;a href&#x3D;&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt; a little bit. With both of them it felt to me like I was more working against them then they were working for me. All along I knew that what I wanted for my site/blog was a very simple thing. I wanted a simple main page linking to an archives page with links to blogposts and I wanted to be able to write my blogposts in markdown. The question at hand was: should I figure out how to do these things with Jekyll or Hexo or just rebuild those few things myself. Thinking about it a little more I realized that all I needed were two simple templates, a markdown parser, reading in some files and writing out some files. Realizing that there are good markdown parsers out there I decided to go with option two and hacked together a simple static site generator in an afternoon. (Honestly I hesitate to even call it a static site generator because that somehow sounds like something cool and complicated and what I hacked together is in essence just a simple script, but it does generate a static site so I guess it is a static site generator). I had a whole lot of fun in the process, so I think it was the right decision if only for that reason.&lt;/p&gt;
+&lt;p&gt;My static site generator is so simple that it propably doesn&#x27;t make sense for anyone else to use it. You could of course use it with your own templates, but rather than figuring that out you will be better of just writing your own and my static site generator is ideal to explain the basic idea.&lt;/p&gt;
+&lt;p&gt;So how does it work? Simple! You create a directory in which you put markdown files which have a name containing the date and the title of the entry separated by underscores. (You can specify the location of this directory as a command line argument to the main script. By default it is a directory called entries in the top level directory). I then get all of the paths to these entries.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; entryPaths &#x3D; fs
+  .readdirSync(entriesPath)
+  .map(&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-params&quot;&gt;fname&lt;/span&gt; &#x3D;&amp;gt;&lt;/span&gt; path.join(entriesPath, fname));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then I parse the files resulting in an array of parsedEntries &lt;code&gt;[{&#x27;title&#x27;: &#x27;Entry1 title&#x27;, &#x27;date&#x27;:&#x27;Entry1 date&#x27;, &#x27;slug&#x27;:&#x27;Entry1 title with whitespaces replaced&#x27;, &#x27;content&#x27;:&#x27;html converted from the markdown&#x27;}, ...]&lt;/code&gt;&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;function&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-title&quot;&gt;parseEntry&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-params&quot;&gt;entryPath&lt;/span&gt;) &lt;/span&gt;{
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; entryFname &#x3D; path.basename(entryPath);
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; {
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;slug&lt;/span&gt;: parseSlug(entryFname),
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;date&lt;/span&gt;: parseDate(entryFname),
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;title&lt;/span&gt;: parseTitle(entryFname),
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;text&lt;/span&gt;: readAndParseContent(entryPath)
+  };
+}
+
+&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;function&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-title&quot;&gt;parseEntries&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-params&quot;&gt;entryPaths&lt;/span&gt;) &lt;/span&gt;{
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; entryPaths.map(&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-params&quot;&gt;entryPath&lt;/span&gt; &#x3D;&amp;gt;&lt;/span&gt; parseEntry(entryPath));
+};
+
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; parsedEntries &#x3D; parseEntries(entryPaths);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Title, date and slug parsing is trivial. To convert the markdown of the content to html I use &lt;a href&#x3D;&quot;https://github.com/jonschlinkert/remarkable&quot;&gt;remarkable&lt;/a&gt;. To get code higlighting I use &lt;a href&#x3D;&quot;https://highlightjs.org/&quot;&gt;highlight.js&lt;/a&gt;. To make remarkable and highlight.js work together you specify the highlight option in the constructor of the remarkable converter.&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; Remarkable &#x3D; &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;require&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;remarkable&quot;&lt;/span&gt;);
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; hljs &#x3D; &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;require&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;highlight.js&quot;&lt;/span&gt;);
+
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; mdConverter &#x3D; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;new&lt;/span&gt; Remarkable({
+  highlight(str, lang) {
+    &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (lang &amp;amp;&amp;amp; hljs.getLanguage(lang)) {
+      &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; hljs.highlight(lang, str).value;
+
+    &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; hljs.highlightAuto(str).value;
+  },
+});
+
+
+&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;function&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-title&quot;&gt;readAndParseContent&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-params&quot;&gt;entryPath&lt;/span&gt;) &lt;/span&gt;{
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; markdownString &#x3D; fs.readFileSync(entryPath).toString();
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;return&lt;/span&gt; mdConverter.render(markdownString);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now that I have my parsedEntries I somehow need to insert this data into templates so that I get my static html files. I want to end up with one one archives page and one post page per entry. Again you can hand the paths to the handlebar templates to the main script. By default they are in the same directory as the script and are called &lt;code&gt;archives.handlebars&lt;/code&gt; and &lt;code&gt;post.handlebars&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;archives.handlebars:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-handlebars&quot;&gt;&lt;span class&#x3D;&quot;xml&quot;&gt; &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;body&lt;/span&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;content&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;h1&lt;/span&gt;&amp;gt;&lt;/span&gt; Dorothea&#x27;s Blog &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;h1&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-tag&quot;&gt;{{#&lt;span class&#x3D;&quot;hljs-name&quot;&gt;&lt;span class&#x3D;&quot;hljs-builtin-name&quot;&gt;each&lt;/span&gt;&lt;/span&gt; headlines}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;
+        &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;headline&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;a&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;href&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;posts/&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{slug}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;&lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;.html&quot;&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;title&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+            &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{title}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;
+            &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;a&lt;/span&gt;&amp;gt;&lt;/span&gt;
+            &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;date&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+              &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{date}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;
+            &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-tag&quot;&gt;{{/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;&lt;span class&#x3D;&quot;hljs-builtin-name&quot;&gt;each&lt;/span&gt;&lt;/span&gt;}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;
+    &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+  &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;body&lt;/span&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and post.handlebars:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-handlebars&quot;&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;&lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;body&lt;/span&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;content&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;headline&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;title&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt; &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{ title }}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt; &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+        &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;date&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt; &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{ date }}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;&lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+      &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;class&lt;/span&gt;&#x3D;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;text&quot;&lt;/span&gt;&amp;gt;&lt;/span&gt;
+        &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-template-variable&quot;&gt;{{{text}}&lt;/span&gt;&lt;span class&#x3D;&quot;xml&quot;&gt;}
+      &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;div&lt;/span&gt;&amp;gt;&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-tag&quot;&gt;&amp;lt;/&lt;span class&#x3D;&quot;hljs-name&quot;&gt;body&lt;/span&gt;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And I compile them using the parsedEntries. The archives page:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;function&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-title&quot;&gt;buildArchives&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-params&quot;&gt;
+  parsedHeadlines,
+  templatePath,
+  outputPath
+&lt;/span&gt;) &lt;/span&gt;{
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; archivesHtml &#x3D; handleBars.compile(
+    fs.readFileSync(templatePath).toString()
+  )({ &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;headlines&lt;/span&gt;: parsedHeadlines });
+  fs.writeFileSync(outputPath, archivesHtml);
+}
+
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (!fs.existsSync(outputPath)) {
+  fs.mkdirSync(outputPath);
+}
+
+buildArchives(
+  parsedEntries.map(&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-params&quot;&gt;entry&lt;/span&gt; &#x3D;&amp;gt;&lt;/span&gt; ({
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;title&lt;/span&gt;: entry.title,
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;date&lt;/span&gt;: entry.date,
+    &lt;span class&#x3D;&quot;hljs-attr&quot;&gt;slug&lt;/span&gt;: entry.slug
+  })),
+  archivesTemplatePath,
+  path.join(outputPath, &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;archives.html&quot;&lt;/span&gt;)
+);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And the posts one by one:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-function&quot;&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;function&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-title&quot;&gt;buildPosts&lt;/span&gt;(&lt;span class&#x3D;&quot;hljs-params&quot;&gt;parsedEntries, templatePath, outputPath&lt;/span&gt;) &lt;/span&gt;{
+  &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;for&lt;/span&gt; (&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; parsedEntry &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;of&lt;/span&gt; parsedEntries) {
+    &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; postHtml &#x3D; handleBars.compile(
+      fs.readFileSync(templatePath).toString()
+    )(parsedEntry);
+    &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;const&lt;/span&gt; postOutputPath &#x3D; path.join(
+      outputPath, &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&#x60;./&lt;span class&#x3D;&quot;hljs-subst&quot;&gt;${parsedEntry.slug}&lt;/span&gt;.html&#x60;&lt;/span&gt;
+    );
+    &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (!postOutputPath) {
+      fs.mkdirSync(postOutputPath);
+    }
+    fs.writeFileSync(postOutputPath, postHtml);
+  }
+}
+
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;if&lt;/span&gt; (!fs.existsSync(path.join(outputPath, &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;posts&quot;&lt;/span&gt;))) {
+  fs.mkdirSync(path.join(outputPath, &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;posts&quot;&lt;/span&gt;));
+}
+
+buildPosts(parsedEntries, postTemplatePath, path.join(outputPath, &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;posts&quot;&lt;/span&gt;));
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;To have a good development and writting experience I didn&#x27;t want to recompile manually each time I was hacking on my static site generator or changing/adding a blogpost. To recompile when the static site generating scripts or blogposts change I use &lt;a href&#x3D;&quot;https://www.npmjs.com/package/watch&quot;&gt;watch&lt;/a&gt; and to reload automatically when any of the output html files or css files change I use &lt;a href&#x3D;&quot;https://www.npmjs.com/package/live-server&quot;&gt;live-server&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;In my package.json file I have:&lt;/p&gt;
+&lt;pre&gt;&lt;code class&#x3D;&quot;language-javascript&quot;&gt;&lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;scripts&quot;&lt;/span&gt;: {
+  &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;start&quot;&lt;/span&gt;: &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;concurrently &#x27;npm run reload&#x27; &#x27;npm run watch&#x27;&quot;&lt;/span&gt;,
+  &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;reload&quot;&lt;/span&gt;: &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;live-server --open&#x3D;./build&quot;&lt;/span&gt;,
+  &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;watch&quot;&lt;/span&gt;: &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;watch &#x27;npm run build&#x27; ./src ./entries&quot;&lt;/span&gt;,
+  &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;build&quot;&lt;/span&gt;: &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;node ./src/main.js --entriesPath ./entries/ --archivesTemplatePath ./src/archives.handlebars --postTemplatePath ./src/post.handlebars --outputPath ./build&quot;&lt;/span&gt;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now I just run &lt;code&gt;npm run start&lt;/code&gt; whenever I am working on my blog. This makes for a really good development and writting experience.&lt;/p&gt;
+
+        
+            </description>
+            
+      
+        </item>
+        
+      
+        <item>
+            
+        
+            <title>
+                FIZZ BUZZ IN X86 ASSEMBLY
+            </title>
+            
+        
+            <link>
+                http://hdorothea.com/fizz-buzz-in-x86-assembly
+            </link>
+            
+        
+            <guid isPermaLink="true">
+                http://hdorothea.com/fizz-buzz-in-x86-assembly
+            </guid>
+            
+        
+            <pubDate>
+                Sept 15 2017
+            </pubDate>
+            
+        
+            <description>
+                
+          &lt;p&gt;A year ago I went through a phase of trying to understand how computers work from the bottom up.&lt;/p&gt;
+&lt;p&gt;I worked through parts of &lt;a href&#x3D;&quot;https://www.coursera.org/learn/build-a-computer&quot;&gt;From Nand to Tetris&lt;/a&gt; and parts of &lt;a href&#x3D;&quot;https://download-mirror.savannah.gnu.org/releases/pgubook/ProgrammingGroundUp-1-0-booksize.pdf&quot;&gt;Programming from the Ground Up&lt;/a&gt; which is still one of my all time favorite programming books.&lt;/p&gt;
+&lt;p&gt;As the culmination of this phase I wrote a FizzBuzz program in x86 assembly. Recently I stumbled upon it on my computer.  Reading through it I was like &#x27;wow this is good you can kind of figure out what is happening even if you don&#x27;t know assembly&#x27; which was my intention when writing it in the first place.&lt;/p&gt;
+&lt;p&gt;I thought it might be useful to other people so I am giving it a better home on this blog. It is written in the AT&amp;amp;T syntax.&lt;/p&gt;
+&lt;p&gt;If you have never read an assembly program before you should know one thing: instructions generally operate on registers. The entire program is basically a big dance of moving around constants and things saved at memory locations and registers to different registers and then calling instructions on them. If this confused you and I am sure it did, just read on.&lt;/p&gt;
+&lt;p&gt;In the first section we label certain memory locations and set their values.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.section&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.data&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;
+number:&lt;/span&gt;
+.quad &lt;span class&#x3D;&quot;hljs-number&quot;&gt;0&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# we start out with 0&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;
+fizz_output:&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.ascii&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;Fizz\n&quot;&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;
+buzz_output:&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.ascii&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;Buzz\n&quot;&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;
+fizzbuzz_output:&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.ascii&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;FizzBuzz\n&quot;&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;
+number_output:&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.ascii&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-string&quot;&gt;&quot;  \n&quot;&lt;/span&gt;
+
+&lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# constants&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; FIZZ_LENGTH, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;8&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;BUZZ_LENGTH, &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-number&quot;&gt;4&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; NUMBER_OUTPUT_LENGTH, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;3&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; FIZZBUZZ_LENGTH, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;11&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; FIZZ_NUMBER, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;3&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;BUZZ_NUMBER, &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-number&quot;&gt;5&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;BASE, &lt;/span&gt;&lt;span class&#x3D;&quot;hljs-number&quot;&gt;10&lt;/span&gt;
+
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; SYS_WRITE, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;4&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# write system call number&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; SYS_EXIT, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;1&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# exit system call number&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; STDOUT, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;1&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# file descriptor&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; LINUX_SYSCALL, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;0x80&lt;/span&gt;
+
+&lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# stack positions&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_OUTPUT_LENGTH, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;8&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# outputlength&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_OUTPUT_ADDRESS, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;16&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# outputaddress&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_NUMBER_OFFSET, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;24&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# numberoffset&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_FIZZ_BOOL, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;25&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# fizzbool&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_BUZZ_BOOL, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;26&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# buzzbool&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST_FIZZBUZZ_BOOL, -&lt;span class&#x3D;&quot;hljs-number&quot;&gt;27&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# fizzbuzzbool&lt;/span&gt;
+&lt;span class&#x3D;&quot;hljs-meta&quot;&gt;.equ&lt;/span&gt; ST, &lt;span class&#x3D;&quot;hljs-number&quot;&gt;27&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The next section is the actual program instructions.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-selector-class&quot;&gt;.section&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-selector-class&quot;&gt;.text&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This .globl _start here is important because it lets the computer know from where to start running your instructions.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-selector-class&quot;&gt;.globl&lt;/span&gt; _start
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Don&#x27;t mind the stack business here too much. Since I don&#x27;t even use functions in this program it wouldn&#x27;t have been necessary.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;_start:
+movq  %rsp, %rbp &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# save the stack pointer&lt;/span&gt;
+subq  $ST, %rsp &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# allocate space for stack variables&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we label the start of the loop. If you scroll farther down towards the end of the program we have an instruction &lt;code&gt;jmp loop&lt;/code&gt; that jumps back to this position in the program and continues executing from here.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;loop&lt;/span&gt;:
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;At the beginning of the loop we (re)set the values at the fizz_bool and buzz_bool memory locations. We move the value 0 to the al register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb $0, %al
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And then move the value at the al register which now is 0 to the fizz_bool memory location. The reason that we didn&#x27;t directly move the value 0 to the memory location is that move instructions need to involve at least one register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%al&lt;/span&gt;, ST_FIZZ_BOOL(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Same thing for the buzz_bool memory location.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb $0, %al
+movb %al, ST_BUZZ_BOOL(%rbp)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The next two instructions come as a pair. First we compare the memory location &lt;code&gt;number&lt;/code&gt; (we had set this to 0 in the data section above and at the end of the loop farther down we also have a &lt;code&gt;incq number&lt;/code&gt; instruction which increments the value at this memory location) to the value 100. The ALU sets a couple special purpose registers when executing the comparison instruction indicating if the first value was greater, equal or less than the second one and uses those registers for the folowing instruction.&lt;/p&gt;
+&lt;p&gt;Compare the current value at the number memory location to the value 100.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmpq $100, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;number&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If it is greater jump to leave.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;jg&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;leave&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Next we need to set the memory location fizz_bool to the correct value. To do that we need to divide the value saved at the memory location number with 3. Divisions are a little complicated.&lt;/p&gt;
+&lt;p&gt;We empty the register rdx for the division.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq $0, %rdx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The value at the memory location number is the dividend. It needs to be in the rax register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;number&lt;/span&gt;, %rax
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;3 is the divisor. Move it to any register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$FIZZ&lt;/span&gt;_NUMBER, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbx&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Perform the division.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;divq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbx&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Compare the remainder of the division(in the rdx register) with the value 0.&lt;br&gt;
+If it is not 0 jump to set_up_buzz_bool. If it is 0 set fizz_bool to 1.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmpq $0, %rdx 
+jne set_up_buzz_bool 
+movb $1, %al
+movb %al, ST_FIZZ_BOOL(%rbp) 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We do the exact same thing for the buzz_bool memory location.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;set_up_buzz_bool:
+movq $0, %rdx
+movq number, %rax
+movq $BUZZ_NUMBER, %rbx 
+divq %rbx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If it is not 0 jump to set_up_fizzbuzz_bool. If it is 0 set buzz_bool to 1.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmpq $0, %rdx
+jne set_up_fizzbuzz_bool
+movb $1, %al
+movb %al, ST_BUZZ_BOOL(%rbp) &lt;span class&#x3D;&quot;hljs-comment&quot;&gt;# set buzzbool to 1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then we set the memory location fizzbuzz_bool to the correct value.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;set_up_fizzbuzz_bool:&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the value at the fizz_bool memory location to any general purpose register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb ST_FIZZ_BOOL(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%al&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Compute &#x27;logical and&#x27; of the values at fizzbool and buzzbool memory locations.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;andb ST_BUZZ_BOOL(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%al&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Set the fizzbuzz_bool memory location to the result of the &#x27;logical and&#x27; of fizzbool and buzzbool.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%al&lt;/span&gt;, ST_FIZZBUZZ_BOOL(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Then we check if the fizzbuzz_bool memory location is set to 1. If not we jump to the is_it_fizz_output memory location. If it is we set the memory location output_address to the address of the memory location fizzbuzz_output (we defined this location in the data section to  have the value &amp;quot;FizzBuzz\n&amp;quot;) and the memory location output length to the value at fizzbuzz_length (which we defined in the data section to be 11) .Then we jump to write_output. We again have to perform the dance with the registers because a move operation needs to involve at least one register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;is_it_fizzbuzz_output:&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move fizzbuzzbool to any general purpose register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb ST_FIZZBUZZ_BOOL(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%al&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Compare fizzbuzzbool with 1.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmpb $1, %al 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If it is not 1 jump to is_it_fizz_output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;jne &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;is&lt;/span&gt;&lt;span class&#x3D;&quot;hljs-number&quot;&gt;_&lt;/span&gt;it&lt;span class&#x3D;&quot;hljs-number&quot;&gt;_f&lt;/span&gt;izz&lt;span class&#x3D;&quot;hljs-number&quot;&gt;_&lt;/span&gt;output
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the address where the string FizzBuzz is located to any general purpose register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$fizzbuzz&lt;/span&gt;_output, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Set the value at the output_address memory location to the address of fizzbuzz_output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;, ST_OUTPUT_ADDRESS(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the value at memory location fizzbuzz_length to any general purpose register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$FIZZBUZZ&lt;/span&gt;_LENGTH, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Set the value at memory location outputlength to the length of the string FizzBuzz.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;, ST_OUTPUT_LENGTH(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Jump to write_output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;jmp&lt;/span&gt; write_output
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is basically the same thing as above only for Fizz as output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;is_it_fizz_output:
+movb ST_FIZZ_BOOL(%rbp), %al
+cmpb $1, %al
+jne is_it_buzz_output
+movq $fizz_output, %rax
+movq %rax, ST_OUTPUT_ADDRESS(%rbp) 
+movq $FIZZ_LENGTH, %rax
+movq %rax, ST_OUTPUT_LENGTH(%rbp)
+jmp write_output
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Again the same thing for when we need to output Bazz.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;is_it_buzz_output:
+movb ST_BUZZ_BOOL(%rbp), %al
+cmpb $1, %al
+jne set_up_number_output 
+movq $buzz_output, %rax
+movq %rax, ST_OUTPUT_ADDRESS(%rbp)
+movq $BUZZ_LENGTH, %rax
+movq %rax, ST_OUTPUT_LENGTH(%rbp)
+jmp write_output
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If it was neither FizzBuzz nor Fizz nor Bazz our output is the number. If we have a number with a single digit that has to be the first thing in the buffer. If we have two digits we first have to have the second digit then the first. To figure out if we have a one digit number we again perform a division.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;set_up_number_output:
+movq $0, %rax
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Set the numberoffset to 0. We need this to insert the digits in the correct location of the buffer.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;, ST_NUMBER_OFFSET(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Empty  the rdx register for the division.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq $0, %rdx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The number is the dividend it needs to be in the register rax.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;number&lt;/span&gt;, %rax
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;10 is the divisor move it to any memory location.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;movq &lt;/span&gt;$&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;BASE, &lt;/span&gt;%rbx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Perform the division&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;divq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbx&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The result of the divison in the register rax indicates if we have a single digit number. Compare it with 0.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cmpq $0, %rax
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If it is 0 we have a single digit number. Jump to zeroth_digit.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;je &lt;/span&gt;zeroth_digit
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If not we get the ascii code of the first digit by adding 48 to the digit.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;addq $48, %rax
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the result to number_output.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;movb &lt;/span&gt;%al, number_output
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Add 1 to number_offset. Because we will need to insert the next digit with an offset.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;addq $1, ST_NUMBER_OFFSET(%rbp)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;zeroth_digit:&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The remainder of the divison in the register rdx is the 0th digit. Get its ascii code.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;addq $48, %rdx
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the value at the number_offset memory location to any register.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq ST_NUMBER_OFFSET(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Move the zeroth digit to number_output plus number_offset&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movb &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%dl&lt;/span&gt;, number_output(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Here we do the same thing we did above with the string outputs. We set the memory locations output_length and output_address to the correct values.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$number&lt;/span&gt;_output, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;
+movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;, ST_OUTPUT_ADDRESS(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$NUMBER&lt;/span&gt;_OUTPUT_LENGTH, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;
+movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;, ST_OUTPUT_LENGTH(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And now we got everything ready for our grand finale. We got our output_address memory location set to the correct address (to a buffer with the ascii values Fizz, Buzz, FizzBuzz or the correct number) and we have the correct length of that buffer saved at the output_length location. What we now want to do is to let the kernel know that we want to write something to a file. And not any file we want to write to the standard output as the shell reads from there and we want to print out our results in the terminal. To do this we will make a system call to the kernel. For the kernel to know what it should do we have to have the write system call number in the register rax. Depending on which system call we want to do we also have to have certain other values in other registers i.e for the write system call the file descriptor (in our case the standard output file descriptor which is 1) needs to be in the register rbx, the starting adress of the buffer we want to write needs to be in the rcx register and the length of the buffer we want to write needs to be in the rdx register. Now all of our preparations pay off.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-symbol&quot;&gt;write_output:&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The (write) system call number needs to be in the register rax.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$SYS&lt;/span&gt;_WRITE, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rax&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The (standard output) file descriptor needs to be in the register rbx.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;$STDOUT&lt;/span&gt;, &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbx&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The starting address of the buffer to write needs to be in the register rcx.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq ST_OUTPUT_ADDRESS(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rcx&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The length of the buffer to write needs to be in the register rdx.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;movq ST_OUTPUT_LENGTH(&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rbp&lt;/span&gt;), &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;%rdx&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And then we finally call the kernel.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;int&lt;/span&gt; $LINUX_SYSCALL
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We increment the value located at the memory location number.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;incq &lt;span class&#x3D;&quot;hljs-built_in&quot;&gt;number&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And jump back to the beginning of the loop.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;jmp&lt;/span&gt; &lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;loop&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When we break out of the loop we need to let the kernel know that the program has finished running. We again put the system call number (in this case it is 1 for the exit system call) to the register rax and then call the kernel.&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;leave:
+movq $SYS_EXIT, %rax
+&lt;span class&#x3D;&quot;hljs-keyword&quot;&gt;int&lt;/span&gt; $LINUX_SYSCALL 
+&lt;/code&gt;&lt;/pre&gt;
+
+        
+            </description>
+            
+      
+        </item>
+        
+      
+        <item>
+            
+        
+            <title>
+                LEARNING WEB DEVELOPMENT IN 2017
+            </title>
+            
+        
+            <link>
+                http://hdorothea.com/learning-web-development-in-2017
+            </link>
+            
+        
+            <guid isPermaLink="true">
+                http://hdorothea.com/learning-web-development-in-2017
+            </guid>
+            
+        
+            <pubDate>
+                Sept 1 2017
+            </pubDate>
+            
+        
+            <description>
+                
+          &lt;p&gt;I have been trying to write this post for a very long time. There is a sweet spot between understanding something and still being aware of the difficulties in learning it which is the ideal time to write a blogpost. It might already have passed but lets give this a try.&lt;/p&gt;
+&lt;p&gt;Given how popular the &lt;a href&#x3D;&quot;https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f&quot;&gt;How it feels to learn JavaScript in 2016&lt;/a&gt; article still is and given that I have been teaching myself web development from the ground up the past months I thought I would write down what learning web development in 2017 was like for me. This is an n equals one kind of story, but these kind of stories &lt;em&gt;can&lt;/em&gt; be useful.&lt;/p&gt;
+&lt;h1&gt;What was hard about it&lt;/h1&gt;
+&lt;p&gt;The hardest part about it was that there where so many things to learn: vanilla javascript, the browser as a platform, frameworks which abstract this away, css, how the front-end fits into the bigger picture... Over the years going to Python and Ruby conferences and meet-ups I had heard a lot of bits and pieces about web-development, but I completely lacked an understanding of the bigger picture as in how do  client, server, HTTP, JavaScript, HTML, DOM, Front-end frameworks, Node.js, Ruby, REST, Ruby on Rails, Python, Flask, NGINX, databases and so on fit together.&lt;/p&gt;
+&lt;p&gt;Another big point of confusion for me at the beginning was: ES5 vs ES2015, different browsers and Node.js implementing different parts of the spec, different runtimes, setting up webPack, modules vs script tags, ES6 Modules vs. CommonJS modules. I guess all of these confusions are exactly what you would expect a beginner to be confused by.&lt;/p&gt;
+&lt;h1&gt;What I did&lt;/h1&gt;
+&lt;p&gt;I started out by learning JavaScript as a language using &lt;a href&#x3D;&quot;https://www.amazon.com/JavaScript-Kids-Playful-Introduction-Programming/dp/1593274084&quot;&gt;JavaScript for Kids&lt;/a&gt;, parts of &lt;a href&#x3D;&quot;https://www.amazon.com/Eloquent-JavaScript-2nd-Ed-Introduction/dp/1593275846/ref&#x3D;sr_1_1?s&#x3D;books&amp;amp;ie&#x3D;UTF8&amp;amp;qid&#x3D;1508880338&amp;amp;sr&#x3D;1-1&amp;amp;keywords&#x3D;eloquent+javascript&quot;&gt;Eloquent JavaScript&lt;/a&gt; and &lt;a href&#x3D;&quot;https://www.amazon.com/JavaScript-Good-Parts-Douglas-Crockford/dp/0596517742/ref&#x3D;pd_sim_14_2?_encoding&#x3D;UTF8&amp;amp;psc&#x3D;1&amp;amp;refRID&#x3D;G9GJZE4FEABBCJYSA0KY&quot;&gt;JavaScript: The Good Parts&lt;/a&gt;. The problem with these books was that all of them were written in and for a pre ES2015 world. This mattered because JavaScript has its fair share of quirks many of which are made better or covered up by ES2015. Also those quirks evidently led to very opinionated ways of development, most of which I actually could have spared myself from. The purpose for this step was to get a little comfortable with JavaScript before starting to write applications but because of this &#x27;opinionated ES5&#x27; vs &#x27;ES2015 without beginner books&#x27; issue it took me a long time to get somewhat comfortable with JavaScript.&lt;/p&gt;
+&lt;p&gt;Then I got swept away by what I like to think of as the front-end wave. I started watching front-end talks from recent conferences. Two of the ones I remember watching and being super excited about were: &lt;a href&#x3D;&quot;https://www.youtube.com/watch?v&#x3D;DqMFX91ToLw&quot;&gt;The Evolution of JavaScript&lt;/a&gt; and &lt;a href&#x3D;&quot;https://www.youtube.com/watch?v&#x3D;0c9OC9NBsro&quot;&gt;The Frontend is A Full Stack&lt;/a&gt;. Another talk I remember watching during that time was &lt;a href&#x3D;&quot;https://www.youtube.com/watch?v&#x3D;8aGhZQkoFbQ&quot;&gt;What the heck is the event loop anyway?&lt;/a&gt; It doesn’t really fit the narrative here but I wanted to mention it as it really helped me understand asynchronous programming in JavaScript (which coming from Python was one of the few fundamental concepts I had to learn). Around that time I also started to read &lt;a href&#x3D;&quot;http://javascriptweekly.com/&quot;&gt;JavaScript Weekly&lt;/a&gt; and &lt;a href&#x3D;&quot;https://frontendfoc.us/&quot;&gt;Frontend Focus&lt;/a&gt; which made my life so much better.  Being swept away by the modern front-end wave also meant that I spent as a whole at least a week trying to understand how to set up a modern front-end development environment with Babel, webPack, Browserify, npm, package.json and so on…&lt;/p&gt;
+&lt;p&gt;I then started to built a full-stack application with Express, postgreSQL and Angular. At that point every single thing I did for this project was new to me and that was hard. Sticking to articles like Dan Abramov&#x27;s &lt;a href&#x3D;&quot;https://medium.com/@dan_abramov/you-might-not-need-redux-be46360cf367&quot;&gt;You Might Not Need Redux&lt;/a&gt; I also decided not to use NgRx. My app ended up exactly like you would expect it to end up. Components I didn&#x27;t know about modifying parts of my state I didn&#x27;t know about and a lot of explicit reactivity I had to manage actively. I am exaggerating a bit but it wasn&#x27;t pretty. At the end of this project I neither felt comfortable in my JavaScript language capabilities (as the way you program using a framework is very different from writing standalone programs) nor in my capability to write a well working web application.&lt;/p&gt;
+&lt;p&gt;I went on to fix the first one by extensively implementing simple and fun algorithm problems in JavaScript and by working on a couple quick one day vanilla javascript front-end projects using ES6 and the MV* architecture. It is so well known that it doesn&#x27;t need mentioning but the &lt;a href&#x3D;&quot;https://github.com/tastejs/todomvc/tree/gh-pages/examples/vanilla-es6&quot;&gt;TodoMVC ES2015 implementation&lt;/a&gt; was really useful and taught me a lot of cool tricks.&lt;/p&gt;
+&lt;p&gt;The second one got fixed when I started to learn React and Redux and implemented a project using them. The week I did was one of my all time glorious programming weeks. I was so unbelievably excited firstly because React in its purest form was similar to Angular and thus was easy for me to get into but felt so. much. better. Especially jsx felt so natural. And secondly because sane state management with Redux was so beautiful! I want to specifically point out that this is not a React vs. Angular issue. In my first project everything was new to me and on top of this while having read a lot of articles about state management and having thought about it extensively I decided not to use a state management tool. In my second project I had a lot more experience I had thought extensively about component based architecture and state management, I had crocked the general principles of single page applications and I was finally using Redux which I had been ready to do for weeks. It was bound to be a much better experience&lt;/p&gt;
+&lt;p&gt;The rest is history. I spent a lot of time getting into the code of &lt;a href&#x3D;&quot;https://github.com/zulip/zulip-mobile/&quot;&gt;zulip-mobile&lt;/a&gt; a big open-source production React-Native app and learned a lot of tricks and best practices in the course of it. Then I got into the nitty-gritty details of the react ecosystem with performance profiling, server-side rendering, pwas, styling alternatives, react storybook, redux ducks and so on and so on.&lt;/p&gt;
+&lt;p&gt;Good stuff, I tell ya...&lt;/p&gt;
+&lt;h1&gt;What I now think would be the best way to get into the JavaScript ecosystem and front-end development&lt;/h1&gt;
+&lt;p&gt;Start with the second edition of &lt;a href&#x3D;&quot;https://www.amazon.com/Secrets-JavaScript-Ninja-John-Resig/dp/1617292850/ref&#x3D;sr_1_1?ie&#x3D;UTF8&amp;amp;qid&#x3D;1508881496&amp;amp;sr&#x3D;8-1&amp;amp;keywords&#x3D;secrets+of+the+javascript+ninja&quot;&gt;Secrets of the JavaScript Ninja&lt;/a&gt;. This is one of the few books out there already with ES2015 syntax (do not bother with ES5) and it is one of the few books out there which not only cover JavaScript as a language but also the browser as a platform. If you don&#x27;t like that book or want something free &lt;a href&#x3D;&quot;http://javascript.info/&quot;&gt;The Modern JavaScript Tutorial&lt;/a&gt; does the same thing and is also pretty cool.&lt;/p&gt;
+&lt;p&gt;Watch  &lt;a href&#x3D;&quot;https://www.youtube.com/watch?v&#x3D;8aGhZQkoFbQ&quot;&gt;What the heck is the event loop anyway?&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Make yourself a simple webpack starter project. Just something that lets you use modules and ES2015 on the front-end. Write one or two small projects with vanilla ES2015 (don&#x27;t bother with jQuerry) i.e a tic-tac-toe, a to-do-list, a search-box whatever comes to mind but keep it simple and uncomplicated.&lt;/p&gt;
+&lt;p&gt;Start reading &lt;a href&#x3D;&quot;http://javascriptweekly.com/&quot;&gt;JavaScript Weekly&lt;/a&gt; and &lt;a href&#x3D;&quot;https://frontendfoc.us/&quot;&gt;Frontend Focus&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Write a simple toy server using Node.js, Express and a simple database.&lt;/p&gt;
+&lt;p&gt;Learn React. The reason your first framework should be React is that it has an enormous adaptation and it will be easy to find open source projects to learn from later on. Start reading &lt;a href&#x3D;&quot;https://react.statuscode.com/&quot;&gt;React Status&lt;/a&gt;. Write a simple app, again think to-do-list something only involving the front-end. Learn Redux. Write your first big project with React. I am sure you already have ideas as to what it should be. Get absorbed into the code of an active React open source app. As mentioned above &lt;a href&#x3D;&quot;https://github.com/zulip/zulip-mobile/&quot;&gt;zulip-mobile&lt;/a&gt; is great (it is React Native though so the set-up is a little more involved). The new &lt;a href&#x3D;&quot;https://github.com/mozilla/addons-frontend&quot;&gt;front-end page for mozilla addons&lt;/a&gt; is another good option.&lt;/p&gt;
+
+        
+            </description>
+            
+      
+        </item>
+        
+  
+    </channel>
+    
+
+</rss>
