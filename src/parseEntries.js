@@ -1,11 +1,11 @@
-const fs = require("fs");
-const path = require("path");
-const pretty = require("pretty");
+const fs = require('fs');
+const path = require('path');
+const pretty = require('pretty');
 
-const Remarkable = require("remarkable");
-const hljs = require("highlight.js");
+const Remarkable = require('remarkable');
+const hljs = require('highlight.js');
 
-var slug = require('slug')
+const slug = require('slug');
 
 const mdConverter = new Remarkable({
   highlight(str, lang) {
@@ -23,24 +23,24 @@ const mdConverter = new Remarkable({
       console.log(err);
     }
 
-    return ""; // use external default escaping
+    return ''; // use external default escaping
   },
   breaks: true
 });
 
 function parseDate(fname) {
   return fname
-    .split("_")
+    .split('_')
     .slice(0, 3)
-    .join(" ");
+    .join(' ');
 }
 
 function parseTitle(fname) {
   const title = fname
-    .split("_")
+    .split('_')
     .slice(3)
-    .join(" ");
-  return title.substr(0, title.lastIndexOf(".")) || title;
+    .join(' ');
+  return title.substr(0, title.lastIndexOf('.')) || title;
 }
 
 function parseSlug(fname) {
