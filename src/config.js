@@ -1,4 +1,4 @@
-const baseUrl = 'http://hdorothea.com/';
+const baseUrl = 'http://hdorothea.com';
 
 module.exports = {
   baseUrl
