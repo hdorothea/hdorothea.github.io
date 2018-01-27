@@ -5,7 +5,7 @@
     <channel>
         
     
-        <atom:link href="http://hdorothea.com/rss.xml" rel="self" type="application/rss+xml"/>
+        <atom:link href="http://hdorothea.com/archives/rss.xml" rel="self" type="application/rss+xml"/>
         
     
         <title>
@@ -14,7 +14,7 @@
         
     
         <link>
-             http://hdorothea.com 
+             http://hdorothea.com/archives 
         </link>
         
     
@@ -32,12 +32,12 @@
             
         
             <link>
-                http://hdorothea.com/this-site
+                http://hdorothea.com/archives/this-site
             </link>
             
         
             <guid isPermaLink="true">
-                http://hdorothea.com/this-site
+                http://hdorothea.com/archives/this-site
             </guid>
             
         
@@ -197,12 +197,12 @@ buildPosts(parsedEntries, postTemplatePath, path.join(outputPath, &lt;span class
             
         
             <link>
-                http://hdorothea.com/fizz-buzz-in-x86-assembly
+                http://hdorothea.com/archives/fizz-buzz-in-x86-assembly
             </link>
             
         
             <guid isPermaLink="true">
-                http://hdorothea.com/fizz-buzz-in-x86-assembly
+                http://hdorothea.com/archives/fizz-buzz-in-x86-assembly
             </guid>
             
         
@@ -482,12 +482,12 @@ movq $SYS_EXIT, %rax
             
         
             <link>
-                http://hdorothea.com/learning-web-development-in-2017
+                http://hdorothea.com/archives/learning-web-development-in-2017
             </link>
             
         
             <guid isPermaLink="true">
-                http://hdorothea.com/learning-web-development-in-2017
+                http://hdorothea.com/archives/learning-web-development-in-2017
             </guid>
             
         
