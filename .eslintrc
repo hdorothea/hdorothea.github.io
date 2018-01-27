@@ -23,13 +23,10 @@
     "no-underscore-dangle":0
   },
   "globals": {
-    "window": true,
-    "document": true,
-    "Event": true,
-    "XMLHttpRequest": true
   },
   "env": {
-    "jasmine": true,
-    "node": true
+    "mocha": true,
+    "node": true,
+    "es6": true
   }
 }
