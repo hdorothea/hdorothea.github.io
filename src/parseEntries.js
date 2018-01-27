@@ -29,10 +29,10 @@ const mdConverter = new Remarkable({
 });
 
 function parseDate(fname) {
-  return fname
+  return new Date(fname
     .split('_')
     .slice(0, 3)
-    .join(' ');
+    .join(' '));
 }
 
 function parseTitle(fname) {
@@ -62,6 +62,34 @@ function parseEntry(entryPath) {
   };
 }
 
-module.exports = function parseEntries(entryPaths) {
+function sortEntries(entries, by = 'date', reverse = 'true') {
+  return entries.sort((a, b) => {
+    if (a[by] < b[by]) {
+      if (reverse) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+    if (a[by] === b[by]) {
+      return 0;
+    }
+
+    if (a[by] > b[by]) {
+      if (reverse) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  });
+}
+
+function parseEntries(entryPaths) {
   return entryPaths.map(entryPath => parseEntry(entryPath));
+}
+
+module.exports = {
+  sortEntries,
+  parseEntries
 };

@@ -11,6 +11,13 @@ handleBars.registerHelper('capitalize', function (str) {
   return '';
 });
 
+handleBars.registerHelper('stringifyDate', function (date) {
+  return date.toString()
+    .split(' ')
+    .slice(1, 4)
+    .join(' ');
+});
+
 function build(context, templatePath, outputPath, formater) {
   const compiled = handleBars.compile(fs.readFileSync(templatePath).toString())(context);
   fs.writeFileSync(outputPath, formater(compiled));

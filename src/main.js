@@ -3,7 +3,7 @@ const parsedArgs = require('commander');
 const fs = require('fs');
 const path = require('path');
 
-const parseEntries = require('./parseEntries');
+const { parseEntries, sortEntries } = require('./parseEntries');
 const build = require('./build');
 
 const { baseUrl } = require('./config');
@@ -48,7 +48,7 @@ if (
 }
 
 const entryPaths = fs.readdirSync(entriesPath).map(fname => path.join(entriesPath, fname));
-const parsedEntries = parseEntries(entryPaths);
+const parsedEntries = sortEntries(parseEntries(entryPaths), 'date', true);
 
 if (!fs.existsSync(outputPath)) {
   fs.mkdirSync(outputPath);
