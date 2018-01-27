@@ -6,7 +6,8 @@ const path = require('path');
 const { parseEntries, sortEntries } = require('./parseEntries');
 const build = require('./build');
 
-const { baseUrl } = require('./config');
+const { blogUrl, baseUrl } = require('./config');
+
 
 parsedArgs
   .version('0.1.0')
@@ -37,8 +38,6 @@ const {
   entriesPath, archivesTemplatePath, postTemplatePath, outputPath, rssTemplatePath
 } = parsedArgs;
 
-console.log(rssTemplatePath);
-
 if (
   !fs.existsSync(entriesPath) ||
   !fs.existsSync(archivesTemplatePath) ||
@@ -55,7 +54,7 @@ if (!fs.existsSync(outputPath)) {
 }
 
 if (rssTemplatePath) {
-  build.rss(parsedEntries, baseUrl, rssTemplatePath, path.join(outputPath, 'rss.xml'));
+  build.rss(parsedEntries, baseUrl, blogUrl, rssTemplatePath, path.join(outputPath, 'rss.xml'));
 }
 
 build.archives(

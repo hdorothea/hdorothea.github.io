@@ -28,8 +28,8 @@ function archives(parsedEntries, withRss, templatePath, outputPath) {
   build({ headlines: parsedEntries, withRss }, templatePath, outputPath, pretty);
 }
 
-function rss(parsedEntries, baseUrl, templatePath, outputPath) {
-  build({ posts: parsedEntries, baseUrl }, templatePath, outputPath, xmlFormater);
+function rss(parsedEntries, baseUrl, blogUrl, templatePath, outputPath) {
+  build({ posts: parsedEntries, baseUrl, blogUrl }, templatePath, outputPath, xmlFormater);
 }
 
 function posts(parsedEntries, templatePath, outputPath) {
