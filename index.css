@@ -88,13 +88,6 @@ p {
   width: 100%;
 }
 
-.current {
-  border-bottom: 5px solid black;
-}
-
-.link-footer a:hover {
-  border-bottom: 5px solid black;
-}
 
 .link-footer a {
   text-decoration: none;
