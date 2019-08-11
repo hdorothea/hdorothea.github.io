@@ -42,10 +42,7 @@
     </div>
   </div>
   <script>
-    var sw = self.addEventListener('fetch', function(event) {
-        /** An empty fetch handler! */
-    });
-    navigator.serviceWorker && navigator.serviceWorker.register(sw)
+    navigator.serviceWorker && navigator.serviceWorker.register('./sw.js');
 
     var userAgent = window.navigator.userAgent;
 
