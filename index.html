@@ -42,10 +42,10 @@
     </div>
   </div>
   <script>
-    navigator.serviceWorker && navigator.serviceWorker.register('./sw.js').then(function(registration) {
-        console.log('Excellent, registered with scope: ', registration.scope);
+    self.addEventListener('fetch', function(event) {
+        /** An empty fetch handler! */
     });
-    
+
     var userAgent = window.navigator.userAgent;
 
     if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent(/Android/i)) {
