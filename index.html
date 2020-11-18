@@ -26,13 +26,6 @@
   <div class="content">
     <div class="container">
       <h1> Dorothea Hoermann </h1>
-      <p>​ I am a software engineer at <a href="https://mailchimp.com/"> Mailchimp</a>! 🙈💌
-        Before this I used to be a scientist
-        <a href="https://www.youtube.com/watch?v=SDIEBgtSSJk"> targeting flies with lasers</a>.
-        Finding a balance between understanding things from the bottom up and getting stuff
-        done is hard. Autodidacts are the coolest. Getting data you can base decissions on will take time and effort.
-        Strong ownership of hard unbound problems is what makes life worthwhile.
-      </p>
       <div class="link-footer">
         <a class="current hoverable"> HOME </a>
         <a class="hoverable" href="https://twitter.com/dorophila"> TWITTER </a>
@@ -43,22 +36,6 @@
   </div>
   <script>
     navigator.serviceWorker && navigator.serviceWorker.register('./sw.js');
-
-    var userAgent = window.navigator.userAgent;
-
-    if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i) || userAgent(/Android/i)) {
-      var links = Array.prototype.slice.call(document.getElementsByClassName("hoverable"));
-      var className = "touchable";
-      links.forEach(function (element) {
-        if (element.classList) {
-          element.classList.add(className);
-        }
-        else {
-          element.className += ' ' + className;
-        }
-      }, this);
-    }
   </script>
 </body>
-
 </html>
